@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{273E484B-A951-48E0-82E7-57ABB1EEA30F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDownloader.ConsoleApp", "src\WebDownloader.ConsoleApp\WebDownloader.ConsoleApp.csproj", "{A8DBC656-A31E-4287-A373-576A444AAD21}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{70FD7243-2556-4064-8773-0B573690DBCA}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A8DBC656-A31E-4287-A373-576A444AAD21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8DBC656-A31E-4287-A373-576A444AAD21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8DBC656-A31E-4287-A373-576A444AAD21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8DBC656-A31E-4287-A373-576A444AAD21}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A8DBC656-A31E-4287-A373-576A444AAD21} = {273E484B-A951-48E0-82E7-57ABB1EEA30F}
+	EndGlobalSection
+EndGlobal
