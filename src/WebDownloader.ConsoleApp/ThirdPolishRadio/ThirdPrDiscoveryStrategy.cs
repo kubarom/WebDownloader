@@ -9,15 +9,17 @@ namespace WebDownloader.ConsoleApp.ThirdPolishRadio;
 internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory, ILogger<ThirdPrDiscoveryStrategy> logger)
     : IDiscoveryStrategy
 {
+    private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     public async Task<List<IDiscoveredItem>> DiscoverAsync(CancellationToken ct)
     {
-        var httpClient =  httpFactory.CreateClient(Registration.ThirdPrHttpClient);
+        var httpClient = httpFactory.CreateClient(Registration.ThirdPrHttpClient);
 
         const int pageSize = 20;
 
         var items = new List<IDiscoveredItem>();
 
-        for (int pageIndex = 0;; pageIndex++)
+        for (int pageIndex = 0; ; pageIndex++)
         {
             string? requestUri = $"https://lp3test.polskieradio.pl/Article/GetListByCategoryId?categoryId=4090&PageSize={pageSize}&skip={pageIndex}&format=400";
             var response = await httpClient.GetAsync(requestUri, ct);
@@ -31,13 +33,13 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory, ILogger<
                 throw new HttpRequestException($"Request failed {response.StatusCode} '{rawContent}' to '{requestUri}'");
             }
 
-            var pageData = JsonSerializer.Deserialize<ThirdPrPageResponse>(rawContent);
-            if (pageData?.Data.Any() ?? true)
+            var pageData = JsonSerializer.Deserialize<ThirdPrPageResponse>(rawContent, _jsonOptions);
+            if ((pageData?.Data.Any() ?? false) is false)
             {
                 break;
             }
 
-            items.AddRange(pageData.Data.Select(pd => new RecordedBroadcast{Id = pd.Id, Url = pd.GetResourceUrl()}));
+            items.AddRange(pageData.Data.Select(pd => new RecordedBroadcast { Id = pd.Id, Url = pd.GetResourceUrl() }));
         }
 
         return items;
