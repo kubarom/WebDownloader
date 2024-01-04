@@ -4,6 +4,8 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 
 namespace WebDownloader.ConsoleApp.ThirdPolishRadio;
 
@@ -13,6 +15,13 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
     : IDiscoveryStrategy
 {
     private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    AsyncRetryPolicy _retryPolicy = Policy
+        .Handle<Exception>()
+        .WaitAndRetryAsync(
+            10,
+            retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
+        );
 
     public async Task<List<IDiscoveredItem>> DiscoverAsync(CancellationToken ct)
     {
@@ -25,7 +34,8 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
         for (int pageIndex = 0; ; pageIndex++)
         {
             string? requestUri = $"https://lp3test.polskieradio.pl/Article/GetListByCategoryId?categoryId=4090&PageSize={pageSize}&skip={pageIndex}&format=400";
-            var response = await httpClient.GetAsync(requestUri, ct);
+
+            var response = await _retryPolicy.ExecuteAsync(async () => await httpClient.GetAsync(requestUri, ct));
 
             logger.LogInformation($"Getting page #{pageIndex} of 3PR 'Tony z Betonu' broadcasts");
 
@@ -50,7 +60,9 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
                 var detailsUrl =
                     $"https://trojka.polskieradio.pl/_next/data/XI7_XRohC52yvsJhLJ5FP/artykul/{relativeUrl}.json";
 
-                var detailsResponse = await httpClient.GetAsync(detailsUrl, ct);
+
+                var detailsResponse = await _retryPolicy.ExecuteAsync(async () => await httpClient.GetAsync(detailsUrl, ct));
+
                 var detailsRawContent = await detailsResponse.Content.ReadAsStringAsync(ct);
 
                 if (detailsResponse.IsSuccessStatusCode is false)
@@ -83,6 +95,6 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
     {
         var httpClient = httpFactory.CreateClient(Registration.ThirdPrHttpClient);
 
-        return httpClient.GetStreamAsync(recordedBroadcast.FileUrl, ct);
+        return _retryPolicy.ExecuteAsync(() => httpClient.GetStreamAsync(recordedBroadcast.FileUrl, ct));
     }
 }
