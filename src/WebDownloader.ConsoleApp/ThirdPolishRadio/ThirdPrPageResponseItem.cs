@@ -10,6 +10,6 @@ public class ThirdPrPageResponseItem
 
     internal string GetResourceUrl()
     {
-        return Url;
+        return Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
     }
 }

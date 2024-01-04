@@ -6,5 +6,8 @@ namespace WebDownloader.ConsoleApp;
 public interface IDiscoveredItem
 {
     public int Id { get; }
-    public string Url { get; }
+    public string RelativeUri { get; }
+    public string Name { get; }
+    public string FileUrl { get; }
+    Task<Stream> DownloadAsync(CancellationToken ct);
 }

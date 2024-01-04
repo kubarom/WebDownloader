@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace WebDownloader.ConsoleApp.ThirdPolishRadio;
 
-internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory, ILogger<ThirdPrDiscoveryStrategy> logger)
+internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
+    IDomainObjectFactory objectFactory,
+    ILogger<ThirdPrDiscoveryStrategy> logger)
     : IDiscoveryStrategy
 {
     private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
@@ -39,9 +42,47 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory, ILogger<
                 break;
             }
 
-            items.AddRange(pageData.Data.Select(pd => new RecordedBroadcast { Id = pd.Id, Url = pd.GetResourceUrl() }));
+            foreach (ThirdPrPageResponseItem pageResponseItem in pageData.Data)
+            {
+                string relativeUrl = pageResponseItem.GetResourceUrl();
+
+                logger.LogInformation("Downloading '{broacastUrl}' broadcast details", relativeUrl);
+                var detailsUrl =
+                    $"https://trojka.polskieradio.pl/_next/data/XI7_XRohC52yvsJhLJ5FP/artykul/{relativeUrl}.json";
+
+                var detailsResponse = await httpClient.GetAsync(detailsUrl, ct);
+                var detailsRawContent = await detailsResponse.Content.ReadAsStringAsync(ct);
+
+                if (detailsResponse.IsSuccessStatusCode is false)
+                {
+                    throw new HttpRequestException($"Broadcast details request failed {response.StatusCode} '{detailsRawContent}' to '{detailsUrl}'");
+                }
+
+                var options = new JsonDocumentOptions { AllowTrailingCommas = true };
+                using JsonDocument doc = JsonDocument.Parse(detailsRawContent, options);
+
+                JsonElement detailsJsonElement = doc.RootElement.GetProperty("pageProps")
+                    .GetProperty("post")
+                    .GetProperty("attachments")[1];
+
+                var detailsItem = detailsJsonElement.Deserialize<ThirdPrBroadcastResponseItem>(_jsonOptions);
+                if (detailsItem is null)
+                {
+                    throw new FormatException(
+                        "Json has incorrect format. It doesn't contain 'pageProps.post.attachments[1]' path");
+                }
+
+                items.Add(objectFactory.CreateInstance<RecordedBroadcast>(pageResponseItem, detailsItem));
+            }
         }
 
         return items;
+    }
+
+    public Task<Stream> DownloadBroadcastAsync(RecordedBroadcast recordedBroadcast, CancellationToken ct)
+    {
+        var httpClient = httpFactory.CreateClient(Registration.ThirdPrHttpClient);
+
+        return httpClient.GetStreamAsync(recordedBroadcast.FileUrl, ct);
     }
 }
