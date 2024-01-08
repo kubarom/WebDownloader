@@ -59,8 +59,10 @@ using (var host = CreateHostBuilder(args).Build())
 static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .UseConsoleLifetime()
-        .ConfigureLogging(builder => builder
+        .ConfigureLogging((host, builder) => builder
             .AddConsole()
+            .AddFilter("Microsoft.Hosting", LogLevel.Warning)
+            .AddFilter("System.Net.Http", LogLevel.Warning)
             .SetMinimumLevel(LogLevel.Information))
         .ConfigureServices((hostContext, services) =>
         {
