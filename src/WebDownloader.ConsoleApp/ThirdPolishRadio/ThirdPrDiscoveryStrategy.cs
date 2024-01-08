@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
+using static System.StringComparison;
 
 namespace WebDownloader.ConsoleApp.ThirdPolishRadio;
 
@@ -73,11 +74,13 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
                 var options = new JsonDocumentOptions { AllowTrailingCommas = true };
                 using JsonDocument doc = JsonDocument.Parse(detailsRawContent, options);
 
-                JsonElement detailsJsonElement = doc.RootElement.GetProperty("pageProps")
+                JsonElement attachmentsItemsElements = doc.RootElement.GetProperty("pageProps")
                     .GetProperty("post")
-                    .GetProperty("attachments")[1];
+                    .GetProperty("attachments");
 
-                var detailsItem = detailsJsonElement.Deserialize<ThirdPrBroadcastResponseItem>(_jsonOptions);
+                var attachmentsItems = attachmentsItemsElements.Deserialize<ThirdPrBroadcastResponseItem[]>(_jsonOptions);
+
+                var detailsItem = attachmentsItems?.SingleOrDefault(a => a.FileType.Equals("Audio", InvariantCulture));
                 if (detailsItem is null)
                 {
                     throw new FormatException(
