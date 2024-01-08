@@ -83,8 +83,8 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
                 var detailsItem = attachmentsItems?.SingleOrDefault(a => a.FileType.Equals("Audio", InvariantCulture));
                 if (detailsItem is null)
                 {
-                    throw new FormatException(
-                        "Json has incorrect format. It doesn't contain 'pageProps.post.attachments[1]' path");
+                    logger.LogWarning("Broadcast under {resourceUrl},Json has incorrect format. It doesn't contain audio 'pageProps.post.attachments[1]' path", pageResponseItem.GetResourceUrl());
+                    continue;
                 }
 
                 items.Add(objectFactory.CreateInstance<RecordedBroadcast>(pageResponseItem, detailsItem));
