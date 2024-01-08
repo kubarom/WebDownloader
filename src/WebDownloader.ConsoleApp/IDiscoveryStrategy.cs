@@ -8,5 +8,5 @@ namespace WebDownloader.ConsoleApp;
 public interface IDiscoveryStrategy
 {
     Task<List<IDiscoveredItem>> DiscoverAsync(CancellationToken ct);
-    Task<Stream> DownloadBroadcastAsync(RecordedBroadcast recordedBroadcast, CancellationToken ct);
+    Task<HttpResponseMessage> DownloadBroadcastAsync(RecordedBroadcast recordedBroadcast, CancellationToken ct);
 }

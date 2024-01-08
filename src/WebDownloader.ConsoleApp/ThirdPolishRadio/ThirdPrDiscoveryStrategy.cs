@@ -93,10 +93,10 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
         return items;
     }
 
-    public Task<Stream> DownloadBroadcastAsync(RecordedBroadcast recordedBroadcast, CancellationToken ct)
+    public Task<HttpResponseMessage> DownloadBroadcastAsync(RecordedBroadcast recordedBroadcast, CancellationToken ct)
     {
         var httpClient = httpFactory.CreateClient(Registration.ThirdPrHttpClient);
 
-        return _retryPolicy.ExecuteAsync(() => httpClient.GetStreamAsync(recordedBroadcast.FileUrl, ct));
+        return _retryPolicy.ExecuteAsync(() => httpClient.GetAsync(recordedBroadcast.FileUrl, ct));
     }
 }

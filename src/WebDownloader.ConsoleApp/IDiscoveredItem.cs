@@ -9,5 +9,5 @@ public interface IDiscoveredItem
     public string RelativeUri { get; }
     public string Name { get; }
     public string FileUrl { get; }
-    Task<Stream> DownloadAsync(CancellationToken ct);
+    Task<HttpResponseMessage> DownloadAsync(CancellationToken ct);
 }

@@ -10,7 +10,7 @@ public class RecordedBroadcast(ThirdPrPageResponseItem responseItem, ThirdPrBroa
     public required string Name { get; init; } = responseDetail.FileName;
     public required string FileUrl { get; init; } = responseDetail.File;
 
-    public Task<Stream> DownloadAsync(CancellationToken ct)
+    public Task<HttpResponseMessage> DownloadAsync(CancellationToken ct)
     {
         return discoveryStrategy.DownloadBroadcastAsync(this, ct);
     }
