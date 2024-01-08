@@ -29,22 +29,18 @@ using (var host = CreateHostBuilder(args).Build())
         logger.LogInformation("Downloading {index} of {count}", index+1, items.Count);
         IDiscoveredItem discoveredItem = items[index];
 
-        var sw = new Stopwatch();
-        sw.Start();
-
-        using var downloadedBroadcast = await discoveredItem.DownloadAsync(ct);
-
         string filePath = Path.Join(downloadRootFolder, discoveredItem.Name);
 
         if (Path.Exists(filePath))
         {
-            if (new FileInfo(filePath).Length == downloadedBroadcast.Content.Headers.ContentLength)
-            {
-                logger.LogWarning("Broadcast {name} already downloaded.", discoveredItem.Name);
-                return;
-            }
-            File.Delete(filePath);
+            logger.LogWarning("Broadcast {name} already downloaded.", discoveredItem.Name);
+            continue;
         }
+
+        var sw = new Stopwatch();
+        sw.Start();
+
+        using var downloadedBroadcast = await discoveredItem.DownloadAsync(ct);
 
         await using var fileStream = File.Open(filePath, FileMode.Create);
 
