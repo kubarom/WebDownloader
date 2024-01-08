@@ -34,7 +34,15 @@ using (var host = CreateHostBuilder(args).Build())
 
         await using var downloadStream = await discoveredItem.DownloadAsync(ct);
 
-        await using var fileStream = File.Open(Path.Join(downloadRootFolder, discoveredItem.Name), FileMode.Create);
+        string filePath = Path.Join(downloadRootFolder, discoveredItem.Name);
+
+        if (Path.Exists(filePath) && new FileInfo(filePath).Length == downloadStream.Length)
+        {
+            logger.LogWarning("Broadcast {name} already downloaded", discoveredItem.Name);
+            return;
+        }
+
+        await using var fileStream = File.Open(filePath, FileMode.Create);
 
         await downloadStream.CopyToAsync(fileStream);
 
