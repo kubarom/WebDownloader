@@ -61,7 +61,6 @@ internal class ThirdPrDiscoveryStrategy(IHttpClientFactory httpFactory,
                 var detailsUrl =
                     $"https://trojka.polskieradio.pl/_next/data/XI7_XRohC52yvsJhLJ5FP/artykul/{relativeUrl}.json";
 
-
                 var detailsResponse = await _retryPolicy.ExecuteAsync(async () => await httpClient.GetAsync(detailsUrl, ct));
 
                 var detailsRawContent = await detailsResponse.Content.ReadAsStringAsync(ct);

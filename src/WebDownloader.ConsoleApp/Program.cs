@@ -38,7 +38,7 @@ using (var host = CreateHostBuilder(args).Build())
 
         if (Path.Exists(filePath) && new FileInfo(filePath).Length == downloadStream.Length)
         {
-            logger.LogWarning("Broadcast {name} already downloaded", discoveredItem.Name);
+            logger.LogWarning("Broadcast {name} already downloaded.", discoveredItem.Name);
             return;
         }
 
